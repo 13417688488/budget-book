@@ -8,15 +8,21 @@ const format = () => ''
 <template>
   <div class="container">
     <h3>分类占比</h3>
-    <div v-for="i in thisMonthAmountList" class="layout">
+    <div v-for="i in thisMonthAmountList" class="layout" v-if="thisMonthAmountList.length > 0">
       <div class="text">{{ i.type }}：花费{{ i.total }}元</div>
       <el-progress :percentage="i.percentage" :stroke-width="30" :format="format"> </el-progress>
     </div>
+    <div v-if="thisMonthAmountList.length === 0" class="center">这里空空如也......</div>
   </div>
 </template>
 
 <style scoped>
 h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.center {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,6 +36,7 @@ h3 {
 .layout {
   .text {
     display: inline-block;
+    width: 10rem;
     margin: 0.5rem;
   }
   .el-progress {

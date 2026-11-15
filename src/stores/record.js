@@ -256,44 +256,48 @@ export const useRecordStore = defineStore('record', () => {
             medicalTotal.value,
             othersTotal.value,
           )
-          thisMonthAmountList.value = [
-            {
-              type: '餐饮',
-              total: foodTotal.value,
-              percentage: Math.round((foodTotal.value / maxnum) * 100),
-            },
-            {
-              type: '交通',
-              total: transpotTotal.value,
-              percentage: Math.round((transpotTotal.value / maxnum) * 100),
-            },
-            {
-              type: '购物',
-              total: shopTotal.value,
-              percentage: Math.round((shopTotal.value / maxnum) * 100),
-            },
-            {
-              type: '居住',
-              total: hotelTotal.value,
-              percentage: Math.round((hotelTotal.value / maxnum) * 100),
-            },
-            {
-              type: '娱乐',
-              total: playTotal.value,
-              percentage: Math.round((playTotal.value / maxnum) * 100),
-            },
-            {
-              type: '医疗',
-              total: medicalTotal.value,
-              percentage: Math.round((medicalTotal.value / maxnum) * 100),
-            },
-            {
-              type: '其他',
-              total: othersTotal.value,
-              percentage: Math.round((othersTotal.value / maxnum) * 100),
-            },
-          ]
-          thisMonthAmountList.value.sort((a, b) => Number(a.total) - Number(b.total))
+          if (filterRecord.value.length === 0) {
+            thisMonthAmountList.value = []
+          } else {
+            thisMonthAmountList.value = [
+              {
+                type: '餐饮',
+                total: foodTotal.value,
+                percentage: Math.round((foodTotal.value / maxnum) * 100),
+              },
+              {
+                type: '交通',
+                total: transpotTotal.value,
+                percentage: Math.round((transpotTotal.value / maxnum) * 100),
+              },
+              {
+                type: '购物',
+                total: shopTotal.value,
+                percentage: Math.round((shopTotal.value / maxnum) * 100),
+              },
+              {
+                type: '居住',
+                total: hotelTotal.value,
+                percentage: Math.round((hotelTotal.value / maxnum) * 100),
+              },
+              {
+                type: '娱乐',
+                total: playTotal.value,
+                percentage: Math.round((playTotal.value / maxnum) * 100),
+              },
+              {
+                type: '医疗',
+                total: medicalTotal.value,
+                percentage: Math.round((medicalTotal.value / maxnum) * 100),
+              },
+              {
+                type: '其他',
+                total: othersTotal.value,
+                percentage: Math.round((othersTotal.value / maxnum) * 100),
+              },
+            ]
+            thisMonthAmountList.value.sort((a, b) => Number(a.total) - Number(b.total))
+          }
         }
       },
       {
