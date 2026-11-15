@@ -26,11 +26,18 @@ export const useRecordStore = defineStore('record', () => {
       note.value = ''
     }
   }
-
   function remove(id) {
     record.value = record.value.filter((r) => {
       return r.id != id.id
     })
+  }
+  function removeAll() {
+    if (record.value.length === 0) {
+      alert('这里啥都木有......你在干神魔')
+      return
+    }
+    if (!window.confirm('确定要清空全部记录吗?此操作不可恢复！')) return
+    record.value = []
   }
 
   // MONTHLY
@@ -44,7 +51,20 @@ export const useRecordStore = defineStore('record', () => {
   const budget = ref(0)
   const editing = ref(false)
   const text = ref()
-  const progressPercentage = ref(0)
+  const progressPercentage = computed(() => {
+    if (budget.value <= 0) {
+      return '0.00%'
+    } else {
+      percentage.value = Number((thisMonthExpense.value / budget.value) * 100)
+      if (percentage.value > 100) {
+        status.value = 'exception'
+        return percentage.value.toFixed(2) + '%' + ' 已超支标记!!!'
+      } else {
+        status.value = undefined
+        return percentage.value.toFixed(2) + '%'
+      }
+    }
+  })
   const percentage = ref(0)
   const status = ref()
   function startEdit() {
@@ -55,9 +75,18 @@ export const useRecordStore = defineStore('record', () => {
     editing.value = false
   }
   function finishEdit() {
-    budget.value = text.value
+    options.value.forEach((o) => {
+      if (o.option === selected.value) {
+        o.budget = text.value
+        budget.value = o.budget
+      }
+    })
+
     editing.value = false
   }
+
+  //TEST
+  const testlist = ref([])
 
   // INIT
   function init() {
@@ -84,26 +113,82 @@ export const useRecordStore = defineStore('record', () => {
       { deep: true },
     )
     watch(
-      [record, selected, budget],
+      budget,
+      () => {
+        testlist.value = options.value
+      },
+      { deep: true },
+    )
+    watch(
+      [record, selected],
       () => {
         // RECORD
-        record.value.sort((a, b) => a.date.localeCompare(b.date))
-        localStorage.setItem('record', JSON.stringify(record.value))
+        record.value.sort((a, b) => b.date.localeCompare(a.date))
+        localStorage.setItem('jizhang.records.v1', JSON.stringify(record.value))
         // MONTHLY
+        const list = ref(options.value)
+        testlist.value = options.value
         options.value = []
-        record.value.forEach((item) => {
-          options.value.push({ option: item.date.slice(0, 7) })
-          const i = ref(1)
-          // 过滤重复options
-          while (i.value < options.value.length) {
-            if (options.value[i.value].option === options.value[i.value - 1].option) {
-              options.value.splice(i.value, 2, { option: item.date.slice(0, 7) })
-              i.value++
-            } else {
-              i.value++
+
+        if (list.value.length === 0) {
+          record.value.forEach((item) => {
+            options.value.push({ option: item.date.slice(0, 7), budget: 3000 })
+            const i = ref(1)
+            // 过滤重复options
+            while (i.value < options.value.length) {
+              if (options.value[i.value].option === options.value[i.value - 1].option) {
+                const budget = options.value[i.value - 1].budget
+                options.value.splice(i.value - 1, 2, {
+                  option: item.date.slice(0, 7),
+                  budget: budget,
+                })
+                i.value++
+              } else {
+                i.value++
+              }
             }
-          }
-        })
+          })
+        } else {
+          list.value.forEach((l) => {
+            record.value.forEach((item) => {
+              if (l.option === item.date.slice(0, 7)) {
+                options.value.push({ option: l.option, budget: l.budget })
+                const i = ref(1)
+                while (i.value < options.value.length) {
+                  options.value.sort((a, b) => a.option.localeCompare(b.option))
+                  if (options.value[i.value].option === options.value[i.value - 1].option) {
+                    const budget = options.value[i.value].budget
+                    options.value.splice(i.value - 1, 2, {
+                      option: item.date.slice(0, 7),
+                      budget: budget,
+                    })
+                    i.value++
+                  } else {
+                    i.value++
+                  }
+                }
+                // options.value.push({ option: l.option, budget: l.budget })
+              } else {
+                options.value.push({ option: item.date.slice(0, 7), budget: 3000 })
+                const i = ref(1)
+                while (i.value < options.value.length) {
+                  options.value.sort((a, b) => a.option.localeCompare(b.option))
+                  if (options.value[i.value].option === options.value[i.value - 1].option) {
+                    const budget = options.value[i.value - 1].budget
+                    options.value.splice(i.value - 1, 2, {
+                      option: item.date.slice(0, 7),
+                      budget: budget,
+                    })
+                    i.value++
+                  } else {
+                    i.value++
+                  }
+                }
+              }
+            })
+          })
+        }
+
         localStorage.setItem('selectedMonth', selected.value)
         thisMonth.value = 0
         thisMonthExpense.value = 0
@@ -121,21 +206,13 @@ export const useRecordStore = defineStore('record', () => {
         })
         thisMonth.value = thisMonthIncome.value - thisMonthExpense.value
 
-        progressPercentage.value = computed(() => {
-          if (budget.value <= 0) {
-            progressPercentage.value = '0.00%'
-          } else {
-            percentage.value = (thisMonthExpense.value / budget.value) * 100
-            if (percentage.value > 100) {
-              status.value = 'exception'
-              progressPercentage.value = percentage.value.toFixed(2) + '%' + ' 已超支标记!!!'
-            } else {
-              status.value = undefined
-              progressPercentage.value = percentage.value.toFixed(2) + '%'
-            }
+        options.value.forEach((o) => {
+          if (o.option === selected.value) {
+            budget.value = o.budget
           }
         })
-        localStorage.setItem('jizhang.budget.v1', budget.value)
+
+        localStorage.setItem('jizhang.budget.v1', JSON.stringify(options.value))
       },
       {
         deep: true,
@@ -145,21 +222,31 @@ export const useRecordStore = defineStore('record', () => {
     watch(
       options,
       () => {
-        if (!options.value[0]) selected.value = 'nothing'
-        else selected.value = options.value[options.value.length - 1].option
+        localStorage.setItem('jizhang.budget.v1', JSON.stringify(options.value))
+        const months = options.value
+        if (months.length === 0) selected.value = 'nothing'
+        else if (!months.some((item) => item.option === selected.value))
+          selected.value = months[months.length - 1].option
       },
       { deep: true },
     )
 
     onMounted(() => {
-      const savedRecord = localStorage.getItem('record')
+      const savedRecord = localStorage.getItem('jizhang.records.v1')
       if (savedRecord) {
         record.value = JSON.parse(savedRecord)
       }
 
-      const savedBudget = ref(localStorage.getItem('jizhang.budget.v1'))
-      if (savedBudget) budget.value = Number(savedBudget.value)
-      else budget.value = 3000
+      const savedBudget = localStorage.getItem('jizhang.budget.v1')
+      if (savedBudget) {
+        options.value = JSON.parse(savedBudget)
+        testlist.value = JSON.parse(savedBudget)
+        options.value.forEach((o) => {
+          if (o.option === selected.value) {
+            budget.value = o.budget
+          }
+        })
+      } else budget.value = 3000
 
       const savedSelectedMonth = ref(localStorage.getItem('selectedMonth'))
       if (savedSelectedMonth) selected.value = savedSelectedMonth.value
@@ -170,6 +257,7 @@ export const useRecordStore = defineStore('record', () => {
     addRecord,
     init,
     remove,
+    removeAll,
     record,
     amount,
     type,
@@ -190,5 +278,6 @@ export const useRecordStore = defineStore('record', () => {
     startEdit,
     cancelEdit,
     finishEdit,
+    testlist,
   }
 })

@@ -1,5 +1,4 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRecordStore } from '@/stores/record'
 const { budget, text, editing, progressPercentage, percentage, status } =

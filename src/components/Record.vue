@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRecordStore } from '@/stores/record'
 const { record, amount, type, date, category, note } = storeToRefs(useRecordStore())
-const { addRecord, remove } = useRecordStore()
+const { addRecord, remove, removeAll } = useRecordStore()
 
 //默认输入
 type.value = 'expense'
@@ -16,13 +16,14 @@ date.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')
   <div class="container">
     <div class="display">
       <ul>
+        <h3>账单明细表</h3>
         <li>
           <div>收支</div>
           <div>金额</div>
           <div>分类</div>
           <div>备注</div>
           <div>日期</div>
-          <div>删除</div>
+          <div><button @click="removeAll">清空全部</button></div>
         </li>
         <li v-for="r in record">
           <div v-if="r.type === 'expense'">支出</div>
@@ -33,23 +34,47 @@ date.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')
             {{ r.amount.toFixed(2) }}￥
           </div>
           <div>{{ r.category }}</div>
-          <div>{{ r.note }}</div>
+          <div class="note">{{ r.note ? r.note : '无备注' }}</div>
           <div>{{ r.date }}</div>
           <div><button @click="remove(r)">X</button></div>
         </li>
+        <li v-if="record.length === 0"></li>
+        <li v-if="record.length === 0"></li>
+        <li v-if="record.length === 0"></li>
+        <li v-if="record.length === 0"></li>
+        <li v-if="record.length === 0"></li>
+        <h4 v-if="record.length === 0">这里空空如也......</h4>
       </ul>
     </div>
 
     <div class="enterplace">
-      <div>金额：<input type="number" v-model="amount" required placeholder="必填(金额)" /></div>
       <div>
-        类型：<select v-model="type">
+        金额：<input
+          type="number"
+          v-model="amount"
+          required
+          placeholder="必填(金额)"
+          @keydown.enter="addRecord"
+        />
+      </div>
+      <div>
+        类型：<button @click="type = type === 'expense' ? 'income' : 'expense'">
+          {{ type === 'expense' ? '支出' : '收入' }}
+        </button>
+        <!-- <select v-model="type">
           <option value="expense">支出</option>
           <option value="income">收入</option>
-        </select>
+        </select> -->
       </div>
       <div>日期：<input type="date" v-model="date" /></div>
-      <div>备注：<input type="text" placeholder="非必填（备注）" v-model="note" /></div>
+      <div>
+        备注：<input
+          type="text"
+          placeholder="非必填（备注）"
+          v-model="note"
+          @keydown.enter="addRecord"
+        />
+      </div>
       <div>
         分类：<select v-model="category" v-if="type === 'expense'">
           <option value="餐饮">餐饮</option>
@@ -109,6 +134,16 @@ date.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')
     padding: 0;
     margin: 0;
     width: 100%;
+    h3 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    h4 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 
   ul li {
@@ -121,5 +156,12 @@ date.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')
     justify-content: center;
     align-items: center;
   }
+}
+.note {
+  max-width: 15vw;
+  word-break: wrap;
+  word-wrap: break-word;
+  white-space: wrap;
+  display: block;
 }
 </style>
