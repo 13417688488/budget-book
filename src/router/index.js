@@ -1,5 +1,6 @@
 import App from '@/App.vue'
 import Budget from '@/components/Budget.vue'
+import Home from '@/components/Home.vue'
 import Monthly from '@/components/Monthly.vue'
 import Record from '@/components/Record.vue'
 import Search from '@/components/Search.vue'
@@ -10,7 +11,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: App,
+      component: Home,
     },
     {
       path: '/record',

@@ -53,15 +53,15 @@ export const useRecordStore = defineStore('record', () => {
   const text = ref()
   const progressPercentage = computed(() => {
     if (budget.value <= 0) {
-      return '0.00%'
+      return '0%'
     } else {
-      percentage.value = Number((thisMonthExpense.value / budget.value) * 100)
+      percentage.value = Number((thisMonthExpense.value / budget.value) * 100).toFixed(0)
       if (percentage.value > 100) {
         status.value = 'exception'
-        return percentage.value.toFixed(2) + '%' + ' 已超支标记!!!'
+        return percentage.value + '%' + ' 已超支标记!!!'
       } else {
         status.value = undefined
-        return percentage.value.toFixed(2) + '%'
+        return percentage.value + '%'
       }
     }
   })
@@ -81,12 +81,19 @@ export const useRecordStore = defineStore('record', () => {
         budget.value = o.budget
       }
     })
-
     editing.value = false
   }
 
-  //TEST
-  const testlist = ref([])
+  // SEARCH
+  const thisMonthAmountList = ref([])
+  const filterRecord = computed(() => {
+    return record.value.filter((r) => {
+      if (r.date.slice(0, 7) === selected.value) {
+        return r
+      }
+      return
+    })
+  })
 
   // INIT
   function init() {
@@ -112,13 +119,13 @@ export const useRecordStore = defineStore('record', () => {
       },
       { deep: true },
     )
-    watch(
-      budget,
-      () => {
-        testlist.value = options.value
-      },
-      { deep: true },
-    )
+    // watch(
+    //   budget,
+    //   () => {
+    //     testlist.value = options.value
+    //   },
+    //   { deep: true },
+    // )
     watch(
       [record, selected],
       () => {
@@ -127,9 +134,7 @@ export const useRecordStore = defineStore('record', () => {
         localStorage.setItem('jizhang.records.v1', JSON.stringify(record.value))
         // MONTHLY
         const list = ref(options.value)
-        testlist.value = options.value
         options.value = []
-
         if (list.value.length === 0) {
           record.value.forEach((item) => {
             options.value.push({ option: item.date.slice(0, 7), budget: 3000 })
@@ -187,32 +192,109 @@ export const useRecordStore = defineStore('record', () => {
               }
             })
           })
+          // BUDGET
+          localStorage.setItem('selectedMonth', selected.value)
+          thisMonth.value = 0
+          thisMonthExpense.value = 0
+          thisMonthIncome.value = 0
+          record.value.forEach((item) => {
+            // calculate
+            if (item.date.slice(0, 7) === selected.value) {
+              if (item.type === 'expense') {
+                thisMonthExpense.value += item.amount
+              }
+              if (item.type === 'income') {
+                thisMonthIncome.value += item.amount
+              }
+            }
+          })
+          thisMonth.value = thisMonthIncome.value - thisMonthExpense.value
+          options.value.forEach((o) => {
+            if (o.option === selected.value) {
+              budget.value = o.budget
+            }
+          })
+          localStorage.setItem('jizhang.budget.v1', JSON.stringify(options.value))
+          // SEARCH
+          const foodTotal = ref(0)
+          const transpotTotal = ref(0)
+          const shopTotal = ref(0)
+          const hotelTotal = ref(0)
+          const playTotal = ref(0)
+          const medicalTotal = ref(0)
+          const othersTotal = ref(0)
+          filterRecord.value.forEach((f) => {
+            if (f.category === '餐饮') {
+              foodTotal.value += f.amount
+            }
+            if (f.category === '交通') {
+              transpotTotal.value += f.amount
+            }
+            if (f.category === '购物') {
+              shopTotal.value += f.amount
+            }
+            if (f.category === '居住') {
+              hotelTotal.value += f.amount
+            }
+            if (f.category === '娱乐') {
+              playTotal.value += f.amount
+            }
+            if (f.category === '医疗') {
+              medicalTotal.value += f.amount
+            }
+            if (f.category === '其他') {
+              othersTotal.value += f.amount
+            }
+          })
+
+          const maxnum = Math.max(
+            foodTotal.value,
+            transpotTotal.value,
+            shopTotal.value,
+            hotelTotal.value,
+            playTotal.value,
+            medicalTotal.value,
+            othersTotal.value,
+          )
+          thisMonthAmountList.value = [
+            {
+              type: '餐饮',
+              total: foodTotal.value,
+              percentage: Math.round((foodTotal.value / maxnum) * 100),
+            },
+            {
+              type: '交通',
+              total: transpotTotal.value,
+              percentage: Math.round((transpotTotal.value / maxnum) * 100),
+            },
+            {
+              type: '购物',
+              total: shopTotal.value,
+              percentage: Math.round((shopTotal.value / maxnum) * 100),
+            },
+            {
+              type: '居住',
+              total: hotelTotal.value,
+              percentage: Math.round((hotelTotal.value / maxnum) * 100),
+            },
+            {
+              type: '娱乐',
+              total: playTotal.value,
+              percentage: Math.round((playTotal.value / maxnum) * 100),
+            },
+            {
+              type: '医疗',
+              total: medicalTotal.value,
+              percentage: Math.round((medicalTotal.value / maxnum) * 100),
+            },
+            {
+              type: '其他',
+              total: othersTotal.value,
+              percentage: Math.round((othersTotal.value / maxnum) * 100),
+            },
+          ]
+          thisMonthAmountList.value.sort((a, b) => Number(a.total) - Number(b.total))
         }
-
-        localStorage.setItem('selectedMonth', selected.value)
-        thisMonth.value = 0
-        thisMonthExpense.value = 0
-        thisMonthIncome.value = 0
-        record.value.forEach((item) => {
-          // calculate
-          if (item.date.slice(0, 7) === selected.value) {
-            if (item.type === 'expense') {
-              thisMonthExpense.value += item.amount
-            }
-            if (item.type === 'income') {
-              thisMonthIncome.value += item.amount
-            }
-          }
-        })
-        thisMonth.value = thisMonthIncome.value - thisMonthExpense.value
-
-        options.value.forEach((o) => {
-          if (o.option === selected.value) {
-            budget.value = o.budget
-          }
-        })
-
-        localStorage.setItem('jizhang.budget.v1', JSON.stringify(options.value))
       },
       {
         deep: true,
@@ -240,7 +322,6 @@ export const useRecordStore = defineStore('record', () => {
       const savedBudget = localStorage.getItem('jizhang.budget.v1')
       if (savedBudget) {
         options.value = JSON.parse(savedBudget)
-        testlist.value = JSON.parse(savedBudget)
         options.value.forEach((o) => {
           if (o.option === selected.value) {
             budget.value = o.budget
@@ -278,6 +359,7 @@ export const useRecordStore = defineStore('record', () => {
     startEdit,
     cancelEdit,
     finishEdit,
-    testlist,
+    filterRecord,
+    thisMonthAmountList,
   }
 })

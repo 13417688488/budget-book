@@ -1,13 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useRecordStore } from '@/stores/record'
+import Home from './components/Home.vue'
 const { init } = useRecordStore()
 init()
 </script>
 
 <template>
-  <header>
+  <!-- <header>
     <div class="container">
+      <RouterLink to="/">首页</RouterLink>
       <RouterLink to="/record">记一笔</RouterLink>
       <RouterLink to="/monthly">看月结</RouterLink>
       <RouterLink to="/budget">控预算</RouterLink>
@@ -19,7 +21,8 @@ init()
     <Transition name="fade" mode="out-in">
       <RouterView></RouterView>
     </Transition>
-  </main>
+  </main> -->
+  <Home></Home>
 </template>
 
 <style scoped>

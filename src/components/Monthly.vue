@@ -8,6 +8,7 @@ const { options, selected, thisMonthExpense, thisMonthIncome, thisMonth } =
 
 <template>
   <div class="container">
+    <h3>月度统计</h3>
     <div class="choose">
       <div>
         月份选择：
@@ -42,6 +43,11 @@ const { options, selected, thisMonthExpense, thisMonthIncome, thisMonth } =
   margin: 1rem;
   padding: 2rem;
   flex-direction: column;
+}
+h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .choose {
   display: flex;

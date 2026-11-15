@@ -8,6 +8,7 @@ const { startEdit, cancelEdit, finishEdit } = useRecordStore()
 
 <template>
   <div class="container">
+    <h3>预算控制</h3>
     <div class="budget">
       本月预算：
       <span @click="startEdit()" v-if="!editing">{{ budget.toFixed(2) }}￥</span>
@@ -24,11 +25,7 @@ const { startEdit, cancelEdit, finishEdit } = useRecordStore()
     <div>
       进度：{{ progressPercentage }}
       <span class="progressLine"
-        ><el-progress
-          :percentage="percentage.toFixed(2)"
-          :status="status"
-          :stroke-width="24"
-        ></el-progress
+        ><el-progress :percentage="percentage" :status="status" :stroke-width="24"></el-progress
       ></span>
     </div>
   </div>
@@ -39,6 +36,11 @@ const { startEdit, cancelEdit, finishEdit } = useRecordStore()
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+}
+h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .container {
   display: flex;
